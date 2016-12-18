@@ -44,6 +44,8 @@ cat << EOF
     --help: Display this message and exit.
     --out-dir: Override output directory (default is ${OUTDIR}).
     --show-build-output: Show output from each library build.
+    --enable-shared: Build as a dynamic framework (requires iOS 8+).
+    --disable-bitcode: Disable bitcode output even on iOS SDK 8+.
     --verbose: Output information about the environment and each stage of the
                build.
 EOF
@@ -95,6 +97,12 @@ else
   vlog "iOS SDK Version ${SDK}"
 fi
 
+if [ "${SDK_MAJOR_VERSION}" -gt 8 ]; then
+  BITCODE=yes
+else
+  BITCODE=no
+fi
+SHARED=no
 
 # Parse the command line.
 while [ -n "$1" ]; do
@@ -109,6 +117,16 @@ while [ -n "$1" ]; do
       ;;
     --enable-debug)
       OPT_FLAGS="-g"
+      ;;
+    --enable-shared)
+      if [ "${SDK_MAJOR_VERSION}" -lt 8 ]; then
+        elog "You need iOS SDK version 8 or above to build as shared library"
+        exit 1
+      fi
+      SHARED=yes
+      ;;
+    --disable-bitcode)
+      BITCODE=no
       ;;
     --show-build-output)
       devnull=
@@ -137,6 +155,8 @@ cat << EOF
   LIPO=${LIPO}
   OPT_FLAGS=${OPT_FLAGS}
   ORIG_PWD=${ORIG_PWD}
+  SHARED=${SHARED}
+  BITCODE=${BITCODE}
 EOF
 fi
 
@@ -165,27 +185,35 @@ for PLATFORM in ${PLATFORMS}; do
     ARCH="i386"
   fi
 
+  if [ "${SHARED}" = "yes" ]; then
+    EXT="so"
+    SDKMIN="8.0"
+  else
+    EXT="a"
+    SDKMIN="6.0"
+  fi
+
   LIBDIR="${OUTDIR}/${PLATFORM}-${SDK}-${ARCH}"
   LIBDIRS="${LIBDIRS} ${LIBDIR}"
-  LIBFILE="${LIBDIR}/libwebm.a"
+  LIBFILE="${LIBDIR}/libwebm.${EXT}"
   eval mkdir -p "${LIBDIR}" ${devnull}
 
   DEVROOT="${DEVELOPER}/Toolchains/XcodeDefault.xctoolchain"
   SDKROOT="${PLATFORMSROOT}/"
   SDKROOT="${SDKROOT}${PLATFORM}.platform/Developer/SDKs/${PLATFORM}${SDK}.sdk/"
   CXXFLAGS="-arch ${ARCH2:-${ARCH}} -isysroot ${SDKROOT} ${OPT_FLAGS}
-            -miphoneos-version-min=6.0"
+            -miphoneos-version-min=${SDKMIN}"
 
   # enable bitcode if available
-  if [ "${SDK_MAJOR_VERSION}" -gt 8 ]; then
+  if [ "${BITCODE}" = "yes" ]; then
     CXXFLAGS="${CXXFLAGS} -fembed-bitcode"
   fi
 
   # Build using the legacy makefile (instead of generating via cmake).
-  eval make -f Makefile.unix libwebm.a CXXFLAGS=\"${CXXFLAGS}\" ${devnull}
+  eval make -f Makefile.unix libwebm.${EXT} CXXFLAGS=\"${CXXFLAGS}\" ${devnull}
 
   # copy lib and add it to LIBLIST.
-  eval cp libwebm.a "${LIBFILE}" ${devnull}
+  eval cp libwebm.${EXT} "${LIBFILE}" ${devnull}
   LIBLIST="${LIBLIST} ${LIBFILE}"
 
   # clean build so we can go again.
@@ -204,4 +232,12 @@ for header_file in ${INCLUDES}; do
 done
 
 eval ${LIPO} -create ${LIBLIST} -output "${OUTDIR}/${TARGETDIR}/WebM" ${devnull}
+
+if [ "${SHARED}" = "yes" ]; then
+  # Adjust the dylib's name so dynamic linking in apps works as expected.
+  eval install_name_tool -id '@rpath/WebM.framework/WebM' "${OUTDIR}/${TARGETDIR}/WebM" ${devnull}
+
+  eval cp -p build/ios-Info.plist "${OUTDIR}/${TARGETDIR}/Info.plist" ${devnull}
+fi
+
 echo "Succesfully built ${TARGETDIR} in ${OUTDIR}."
