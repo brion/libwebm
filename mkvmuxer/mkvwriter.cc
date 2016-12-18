@@ -6,7 +6,7 @@
 // in the file PATENTS.  All contributing project authors may
 // be found in the AUTHORS file in the root of the source tree.
 
-#include "mkvmuxer/mkvwriter.h"
+#include "mkvwriter.h"
 
 #include <sys/types.h>
 

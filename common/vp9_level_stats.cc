@@ -12,7 +12,7 @@
 #include <limits>
 #include <utility>
 
-#include "common/webm_constants.h"
+#include "webm_constants.h"
 
 namespace vp9_parser {
 

@@ -13,11 +13,11 @@
 
 #include "gtest/gtest.h"
 
-#include "common/hdr_util.h"
-#include "common/vp9_header_parser.h"
-#include "mkvparser/mkvparser.h"
-#include "mkvparser/mkvreader.h"
-#include "testing/test_util.h"
+#include "hdr_util.h"
+#include "vp9_header_parser.h"
+#include "../mkvparser/mkvparser.h"
+#include "../mkvparser/mkvreader.h"
+#include "../testing/test_util.h"
 
 namespace {
 
