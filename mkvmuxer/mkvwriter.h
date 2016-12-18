@@ -11,8 +11,8 @@
 
 #include <stdio.h>
 
-#include "mkvmuxer/mkvmuxer.h"
-#include "mkvmuxer/mkvmuxertypes.h"
+#include "mkvmuxer.h"
+#include "mkvmuxertypes.h"
 
 namespace mkvmuxer {
 

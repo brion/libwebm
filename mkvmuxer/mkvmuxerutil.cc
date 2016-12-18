@@ -6,7 +6,7 @@
 // in the file PATENTS.  All contributing project authors may
 // be found in the AUTHORS file in the root of the source tree.
 
-#include "mkvmuxer/mkvmuxerutil.h"
+#include "mkvmuxerutil.h"
 
 #ifdef __ANDROID__
 #include <fcntl.h>
@@ -20,9 +20,9 @@
 #include <ctime>
 #include <new>
 
-#include "common/webmids.h"
-#include "mkvmuxer/mkvmuxer.h"
-#include "mkvmuxer/mkvwriter.h"
+#include "../common/webmids.h"
+#include "mkvmuxer.h"
+#include "mkvwriter.h"
 
 namespace mkvmuxer {
 

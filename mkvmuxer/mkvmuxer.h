@@ -15,8 +15,8 @@
 #include <list>
 #include <map>
 
-#include "common/webmids.h"
-#include "mkvmuxer/mkvmuxertypes.h"
+#include "../common/webmids.h"
+#include "mkvmuxertypes.h"
 
 // For a description of the WebM elements see
 // http://www.webmproject.org/code/specs/container/.

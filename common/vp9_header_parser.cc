@@ -5,7 +5,7 @@
 // tree. An additional intellectual property rights grant can be found
 // in the file PATENTS.  All contributing project authors may
 // be found in the AUTHORS file in the root of the source tree.
-#include "common/vp9_header_parser.h"
+#include "vp9_header_parser.h"
 
 #include <stdio.h>
 
